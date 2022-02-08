@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>Local Mouse/Keyboard Control Remote Computer By Using LOGITracker | z3dd1cu5&#39;s Notebook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="IntroductionWhen talking about controlling remote desktop, we always use apps such as Windows Remote Desktop, VNC Viewer. In RDP and VNC Protocol, USB events are transferred from local to remote, to “">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Local Mouse&#x2F;Keyboard Control Remote Computer By Using LOGITracker">
+<meta property="og:url" content="https://z3dd1cu5.github.io/2022/02/08/logitracker-remote-control/index.html">
+<meta property="og:site_name" content="z3dd1cu5&#39;s Notebook">
+<meta property="og:description" content="IntroductionWhen talking about controlling remote desktop, we always use apps such as Windows Remote Desktop, VNC Viewer. In RDP and VNC Protocol, USB events are transferred from local to remote, to “">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://z3dd1cu5.github.io/2022/02/08/logitracker-remote-control/structure.jpg">
+<meta property="og:image" content="https://infocenter.nordicsemi.com/topic/com.nordic.infocenter.sdk5.v15.0.0/usb_report_flow.svg">
+<meta property="article:published_time" content="2022-02-08T12:42:20.000Z">
+<meta property="article:modified_time" content="2022-02-08T13:28:40.945Z">
+<meta property="article:author" content="z3dd1cu5">
+<meta property="article:tag" content="IoT, Remote Control">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://z3dd1cu5.github.io/2022/02/08/logitracker-remote-control/structure.jpg">
+  
+    <link rel="alternate" href="https://github.com/z3dd1cu5" title="z3dd1cu5's Notebook" >
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+    
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
+
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  <link href="https://fonts.googleapis.com/css?family=Schoolbell&v1" rel="stylesheet">
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <button id="top-button" onclick="javascript:window.location.href='#banner';">Top</button>
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">z3dd1cu5&#39;s Notebook</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" target="_blank" rel="noopener" href="https://github.com/z3dd1cu5" title="Github"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://z3dd1cu5.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-logitracker-remote-control" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/02/08/logitracker-remote-control/" class="article-date">
+  <time class="dt-published" datetime="2022-02-08T12:42:20.000Z" itemprop="datePublished">2022-02-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      Local Mouse/Keyboard Control Remote Computer By Using LOGITracker
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>When talking about controlling remote desktop, we always use apps such as Windows Remote Desktop, VNC Viewer. In RDP and VNC Protocol, USB events are transferred from local to remote, to “control” the remote desktop. </p>
+<p>However, remote desktop apps failed to pass all USB keyboard events to remote, because some events are captured and handled directly by OS rather than the app. For example, if you’re using RDP client on macOS and you want to send <code>Win+W</code> to remote Windows Desktop, so you press <code>Command+W</code>, Oooops, you close your RDP client. It happens rarely, but a bit annoying as it happens.</p>
+<p>One possible solution is to capture raw events from I/O device with the help of special hardware, then forward them to the remote computer. That’s exactly part of <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/KVM_switch">KVM(keyboard, video and mouse) over IP</a>.  The raw events are OS-independent, so IP-KVM even works when the remote computer is in BIOS mode. For Operations Engineers, it’s super handy to maintain computers remotely using IP-KVM.</p>
+<p>This article shows a DIY demo controlling the remote computer by using <a target="_blank" rel="noopener" href="https://github.com/RoganDawes/LOGITacker">LOGITracker</a>. 2 radio dongles receive (or send) <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Radio_frequency">Radio Frequency(RF)</a> signals from (or to) <a target="_blank" rel="noopener" href="https://www.logitech.com/en-us/resource-center/what-is-unifying.html">Logitech Unifying</a> mouse and keyboard. The code is written C/C++, which could run on low-end devices like Raspberry Pi. In our tests, it’s usable for document editing and Internet browsing when network latency is low. (I believe nobody plays a game using IP-KVM.) Every RF signal just consists of several bytes, network bandwidth of 8Mbps is sufficient. </p>
+<h2 id="How-it-works"><a href="#How-it-works" class="headerlink" title="How it works?"></a>How it works?</h2><img src="/2022/02/08/logitracker-remote-control/structure.jpg" class="" title="Overall Structure">
+
+<p>The overall structure is in the figure. Only mouse marked in this figure, keyboard works similar to mouse.</p>
+<p>Local: a wireless mouse connects to Computer 1 via a Unifying receiver. Computer 3 with RF dongle connected captures RF signals from the source mouse, then sends bytes to Computer 4 through socket. </p>
+<p>Remote: When Computer 4 receives bytes, the RF dongle connected to Computer 4 sends RF signals to the Unifying receiver, pretending that the remote mouse sends RF signals. The Unifying receiver transforms RF signals to USB events for the target computer. </p>
+<p>In this way, the signal from the source mouse is indirectly forwarded to the target computer.</p>
+<p>Note: </p>
+<ol>
+<li><p>Computer 4 is not necessary if Computer 2 can receive bytes from socket and RF dongle is connected to Computer 2.</p>
+</li>
+<li><p>The remote mouse must be paired with the remote Unifying receiver so that the RF dongle can emulate the remote mouse. This demo works regardless of the remote mouse turned on/off.</p>
+</li>
+<li><p>The local mouse must be paired with the local Unifying receiver. The local mouse only sends RF signals when the local Unifying receiver functions normally, so Computer 1 is used to put the receiver in working status and ignore the USB events. (Actually, the local Unifying receiver plugs into a Raspberry Pi.)</p>
+</li>
+</ol>
+<h2 id="Device-Specifications"><a href="#Device-Specifications" class="headerlink" title="Device Specifications"></a>Device Specifications</h2><p>RF Dongle: <a target="_blank" rel="noopener" href="https://www.nordicsemi.com/Products/Development-hardware/nrf52840-dongle">Nordic nRF52840 Dongle (PCA10059)</a></p>
+<p>Unifying Receiver: C-U0008 Firmware 24.00(18)</p>
+<p>Remote Mouse: Logitech MX Anywhere 2S</p>
+<p>Remote Keyboard: Logitech MX Keys</p>
+<p>Local Mouse: Logitech M185</p>
+<p>Local Keyboard: Logitech K270</p>
+<p>Computer 1: Raspberry Pi Zero W, Raspberry Pi OS</p>
+<p>Computer 2: Lenovo ThinkPad X1C, Windows 10</p>
+<p>Computer 3: MacBook Pro, macOS Big Sur 11.6</p>
+<p>Computer 4: Lenovo ThinkPad X1C, Windows 10</p>
+<h2 id="Tweak-LOGITracker"><a href="#Tweak-LOGITracker" class="headerlink" title="Tweak LOGITracker"></a>Tweak LOGITracker</h2><p>LOGITacker is a hardware tool to enumerate and test vulnerabilities of Logitech Wireless Input devices via RF. It’s the tool that helps us capture and send RF signals conveniently. LOGITacker firmware provides a USB-serial-based CLI to configure the dongle, including discover, enumerate, inject modes, but injecting RF signals is not available in CLI. Besides, LOGITacker firmware dumps RF signals to USB HID Interface if enabled in CLI, but we can’t send RF signals through the USB HID Interface. Therefore, we’ll do some tweaks on LOGITracker, making it send RF signals according to bytes received from USB HID Interface.</p>
+<h3 id="Environment-Setup"><a href="#Environment-Setup" class="headerlink" title="Environment Setup"></a>Environment Setup</h3><p>Let’s get started configuring the build env. Although the manual of LOGITacker says nothing about how to build the firmware, you can find a <a target="_blank" rel="noopener" href="https://github.com/RoganDawes/LOGITacker/blob/master/Dockerfile">Dockerfile</a> in the repository. If you prefer Docker, you can use Dockerfile to build an image and run a container. If you go over the Dockerfile, you’ll see it download a Kali Linux to build the firmware. Not necessary to do that, any Linux distribution is OK for building. Here are some instructions for Debian 10:</p>
+<ol>
+<li><p>Install Tools</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ apt-get update &amp;&amp; apt-get -y install wget git gcc-arm-none-eabi unzip sed make</span><br></pre></td></tr></table></figure></li>
+<li><p>Download nRF5 SDK and LOGITracker</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ wget https://www.nordicsemi.com/-/media/Software-and-other-downloads/SDKs/nRF5/Binaries/nRF5SDK153059ac345.zip</span><br><span class="line">$ unzip nRF5SDK153059ac345.zip</span><br><span class="line">$ git clone https://github.com/RoganDawes/LOGITacker</span><br></pre></td></tr></table></figure></li>
+<li><p>Modify SDK Path (Assume SDK Path is /root/nRF5_SDK_15.3.0_59ac345)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd LOGITacker/pca10059/blank/armgcc</span><br><span class="line">$ sed -i &quot;s#^SDK_ROOT.*#SDK_ROOT := /root/nRF5_SDK_15.3.0_59ac345#g&quot; Makefile</span><br></pre></td></tr></table></figure></li>
+<li><p>Build firmware</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make</span><br></pre></td></tr></table></figure>
+<p>The output firmware is located in <code>LOGITacker/pca10059/blank/armgcc/_build/logitacker_pca10059.hex</code>. Every time you modify the code, you need to remake a new firmware.</p>
+</li>
+</ol>
+<h3 id="Tweak"><a href="#Tweak" class="headerlink" title="Tweak"></a>Tweak</h3><p>Now we are goning to make our firmware send RF signals according to bytes received from USB HID Interface. </p>
+<p>After going over the <a target="_blank" rel="noopener" href="https://infocenter.nordicsemi.com/topic/com.nordic.infocenter.sdk5.v15.0.0/lib_usbd_class_hid.html">Nordic official document introducing USB HID</a>, we will get the the report flow between a USB host and the device. The OUT endpoint is just our target.</p>
+<p><img src="https://infocenter.nordicsemi.com/topic/com.nordic.infocenter.sdk5.v15.0.0/usb_report_flow.svg"></p>
+<p>Then check the LOGITracker repository. There’s a <code>logitracker/logitacker_usb.c</code> file likely to be USB-related. Let’s check the code:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">uint32_t logitacker_usb_read_hidraw_output_report() &#123;</span><br><span class="line">    size_t len = LOGITACKER_USB_HID_GENERIC_OUT_REPORT_MAXSIZE;</span><br><span class="line">    const uint8_t *p_report = app_usbd_hid_generic_out_report_get(&amp;m_app_hid_generic, &amp;len);</span><br><span class="line"></span><br><span class="line">    NRF_LOG_HEXDUMP_INFO(p_report, len)</span><br><span class="line">    logitacker_usb_hidraw_report_type_t type = p_report[1];</span><br><span class="line">    loigtacker_usb_hidraw_command_t command = p_report[2];</span><br><span class="line"></span><br><span class="line">    NRF_LOG_INFO(&quot;type: %02x, command: %02x\n&quot;, type, command);</span><br><span class="line"></span><br><span class="line">    switch (type) &#123;</span><br><span class="line">        case LOGITACKER_USB_HIDRAW_REPORT_TYPE_COMMAND: &#123;</span><br><span class="line">            ...</span><br><span class="line"></span><br><span class="line">    return NRF_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Wait? Does that mean the firmware already listens to the OUT report and reacts to the report bytes? (Maybe it’s a hidden feature lol.) It’s apparently that <code>p_report</code> is the bytes array read from USB HID.</p>
+<p>Well, the next step is to add some code to send RF signals. After reviewing the code carefully, we finally find out <code>nrf_esb_write_payload()</code> function that is used for sending RF signals. But how to use it?</p>
+<p><a target="_blank" rel="noopener" href="https://developer.nordicsemi.com/nRF_Connect_SDK/doc/latest/nrf/ug_esb.html">The document of ESB is here.</a> It’s a protocol supporting two-way data packet communication, a bit complicated. Fortunately, when we enter the injection mode in CLI, the firmware already sets up the device as sending status, and the only thing we need to do is to call <code>nrf_esb_write_payload()</code> function. Therefore we tweak the code like this:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">uint32_t logitacker_usb_read_hidraw_output_report() &#123;</span><br><span class="line">    size_t len = LOGITACKER_USB_HID_GENERIC_OUT_REPORT_MAXSIZE;</span><br><span class="line">    const uint8_t *p_report = app_usbd_hid_generic_out_report_get(&amp;m_app_hid_generic, &amp;len);</span><br><span class="line"></span><br><span class="line">    NRF_LOG_HEXDUMP_INFO(p_report, len)</span><br><span class="line">    logitacker_usb_hidraw_report_type_t type = p_report[1];</span><br><span class="line">    loigtacker_usb_hidraw_command_t command = p_report[2];</span><br><span class="line"></span><br><span class="line">    NRF_LOG_INFO(&quot;type: %02x, command: %02x\n&quot;, type, command);</span><br><span class="line"></span><br><span class="line">    switch (type) &#123;</span><br><span class="line">        case LOGITACKER_USB_HIDRAW_REPORT_TYPE_RF_FRAME: &#123;</span><br><span class="line">            nrf_esb_payload_t frame = &#123;0&#125;;</span><br><span class="line">            frame.length = p_report[3];</span><br><span class="line">            memcpy(&amp;frame.data, &amp;p_report[4], frame.length);</span><br><span class="line">            uint32_t result = nrf_esb_write_payload(&amp;frame);</span><br><span class="line">            if (result == NRF_SUCCESS) &#123;</span><br><span class="line">                NRF_LOG_INFO(&quot;Writing payload success!&quot;);</span><br><span class="line">            &#125; </span><br><span class="line">            else &#123;</span><br><span class="line">                NRF_LOG_INFO(&quot;Writing payload failed!&quot;);</span><br><span class="line">            &#125;</span><br><span class="line">            break;</span><br><span class="line">        &#125;</span><br><span class="line">        case LOGITACKER_USB_HIDRAW_REPORT_TYPE_COMMAND: &#123;</span><br><span class="line">            ...</span><br><span class="line"></span><br><span class="line">    return NRF_SUCCESS;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notes: </p>
+<ol>
+<li>p_report[0] is the report size. In our test, it’s always <code>0x01</code>.</li>
+<li>p_report[1] indicates the type. When we send bytes through USB HID, we need to set p_report[1] = <code>LOGITACKER_USB_HIDRAW_REPORT_TYPE_RF_FRAME (0x01)</code>.</li>
+<li>p_report[2] can be any value in our case. We just ignore this byte.</li>
+<li>p_report[3] is the length of data, p_report[4] and following bytes store the data. </li>
+</ol>
+<p>Cool! We just add a couple of lines of code to implement this feature. Now we can rebuild the firmware and flash the dongle.</p>
+<h2 id="Play-with-HIDAPI"><a href="#Play-with-HIDAPI" class="headerlink" title="Play with HIDAPI"></a>Play with HIDAPI</h2><p><a target="_blank" rel="noopener" href="https://github.com/libusb/hidapi">HIDAPI</a> is a library which allows an application to interface with USB HID-Class devices, supporting Windows, Linux, and macOS. We recommend building this library from source code for stability and compatibility.</p>
+<h3 id="Build-from-Source"><a href="#Build-from-Source" class="headerlink" title="Build from Source"></a>Build from Source</h3><p>For Windows, Visual Studio and Windows SDK is required. You just need to open <code>hidapi/windows/hidapi.sln</code> and build <code>hidtest</code> project. The execute file is in project directory.</p>
+<p>For macOS, XCode Command Line Tools is required, but XCode App is not necessary. Go to <code>hidapi/mac</code> and <code>make -f Makefile-manual</code>, you’ll see the output file <code>hidtest</code>.</p>
+<h3 id="Tweak-1"><a href="#Tweak-1" class="headerlink" title="Tweak"></a>Tweak</h3><p>When you plug the dongle with LOGITracker firmware into your computer, you’ll see 1 USB serial port, 3 USB Devices. The USB serial port is for CLI, and the USB Devices are for mouse/keyboard pass through and dump of raw events. However, these 4 entries share the same <code>Vendor ID</code>, <code>Product ID</code>, and <code>Serial Number</code>, we can only distinguish them by <code>Interface ID</code>.</p>
+<p><code>hid_open()</code> is the first step of using HIDAPI. the function definition is like this:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number)</span><br></pre></td></tr></table></figure>
+<p>To correctly open HID interface for reading and writing RF signal bytes, we need to tweak <code>hid_open()</code> function, adding a <code>interface_number</code> parameter.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number, int interface_number)</span><br><span class="line">&#123;</span><br><span class="line">    /* This function is identical to the Linux version. Platform independent. */</span><br><span class="line">    struct hid_device_info *devs, *cur_dev;</span><br><span class="line">    const char *path_to_open = NULL;</span><br><span class="line">    hid_device * handle = NULL;</span><br><span class="line"></span><br><span class="line">    devs = hid_enumerate(vendor_id, product_id);</span><br><span class="line">    cur_dev = devs;</span><br><span class="line">    while (cur_dev) &#123;</span><br><span class="line">        if (cur_dev-&gt;vendor_id == vendor_id &amp;&amp; cur_dev-&gt;product_id == product_id &amp;&amp; cur_dev-&gt;interface_number == interface_number) &#123;</span><br><span class="line">            if (serial_number) &#123;</span><br><span class="line">                if (wcscmp(serial_number, cur_dev-&gt;serial_number) == 0) &#123;                               </span><br><span class="line">                    path_to_open = cur_dev-&gt;path;</span><br><span class="line">                    break;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            else &#123;</span><br><span class="line">                path_to_open = cur_dev-&gt;path;</span><br><span class="line">                break;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        cur_dev = cur_dev-&gt;next;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    if (path_to_open) &#123;</span><br><span class="line">        /* Open the device */</span><br><span class="line">        handle = hid_open_path(path_to_open);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    hid_free_enumeration(devs);</span><br><span class="line"></span><br><span class="line">    return handle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="HID-Read-Write"><a href="#HID-Read-Write" class="headerlink" title="HID Read/Write"></a>HID Read/Write</h3><p>Read:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">unsigned char buf[32];</span><br><span class="line"></span><br><span class="line">if (hid_init())</span><br><span class="line">    return -1;</span><br><span class="line"></span><br><span class="line">// Open the device using the VID, PID,</span><br><span class="line">// and optionally the Serial number.</span><br><span class="line">handle = hid_open(0x1915, 0x520c, NULL, 2); // LOGITracker VID = 0x1915, PID = 0x520c</span><br><span class="line">if (!handle) &#123;</span><br><span class="line">    printf(&quot;unable to open device\n&quot;);</span><br><span class="line">    return 1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// Set the hid_read() function to be blocking.</span><br><span class="line">hid_set_nonblocking(handle, 0);</span><br><span class="line"></span><br><span class="line">// Try to read from the device. There should be no</span><br><span class="line">// data here, but execution should not block.</span><br><span class="line">memset(buf,0,sizeof(buf));</span><br><span class="line">res = hid_read(handle, buf, sizeof(buf));</span><br><span class="line">if (res &lt; 0)</span><br><span class="line">    printf(&quot;Unable to read()\n&quot;);</span><br><span class="line"></span><br><span class="line">// Try to write to the device. </span><br><span class="line">res = hid_write(handle, buf, sizeof(buf));</span><br><span class="line">if (res &lt; 0) &#123;</span><br><span class="line">    printf(&quot;Unable to write()\n&quot;);</span><br><span class="line">    printf(&quot;Error: %ls\n&quot;, hid_error(handle));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">hid_close(handle);</span><br><span class="line"></span><br><span class="line">/* Free static HIDAPI objects. */</span><br><span class="line">hid_exit();</span><br></pre></td></tr></table></figure>
+
+<h2 id="And…Socket"><a href="#And…Socket" class="headerlink" title="And…Socket"></a>And…Socket</h2><p>Let Computer 3 and Computer 4 communicate using socket. We choose Computer 4 as the server, and Computer 3 as the client. Just a simple socket connection. We don’t encrypt the socket bytes because of simplicity (it’s just a demo).</p>
+<p>Code for Computer 3:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;wchar.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">#include &lt;hidapi.h&gt;</span><br><span class="line"></span><br><span class="line">// Headers needed for sleeping.</span><br><span class="line">#ifdef _WIN32</span><br><span class="line">	#include &lt;windows.h&gt;</span><br><span class="line">#else</span><br><span class="line">	#include &lt;sys/socket.h&gt;</span><br><span class="line">	#include &lt;sys/types.h&gt;</span><br><span class="line">	#include &lt;unistd.h&gt;</span><br><span class="line">	#include &lt;netdb.h&gt;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#define SERVER_PORT 6666</span><br><span class="line">#define SERVER_IP 127.0.0.1</span><br><span class="line"></span><br><span class="line">int main(int argc, char* argv[])</span><br><span class="line">&#123;</span><br><span class="line">	(void)argc;</span><br><span class="line">	(void)argv;</span><br><span class="line"></span><br><span class="line">	int res;</span><br><span class="line">	unsigned char buf[32];</span><br><span class="line">	unsigned char writebuf[16];</span><br><span class="line">	#define MAX_STR 255</span><br><span class="line">	hid_device *handle;</span><br><span class="line"></span><br><span class="line">	//1 new socket</span><br><span class="line"></span><br><span class="line">	int socketfd = socket(AF_INET, SOCK_STREAM, 0);</span><br><span class="line">	if (socketfd &lt; 0)</span><br><span class="line">	&#123;</span><br><span class="line">		perror(&quot;socket error&quot;);</span><br><span class="line">		exit(1);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	//2 connect</span><br><span class="line">	struct sockaddr_in serveraddr;</span><br><span class="line">	memset(&amp;serveraddr, 0, sizeof(serveraddr));</span><br><span class="line">	serveraddr.sin_family = AF_INET;</span><br><span class="line">	serveraddr.sin_port = htons(SERVER_PORT);</span><br><span class="line"></span><br><span class="line">	if(connect(socketfd, (struct sockaddr*)&amp;serveraddr, sizeof(serveraddr)) &lt; 0 )</span><br><span class="line">	&#123;</span><br><span class="line">		perror(&quot;connect error&quot;);</span><br><span class="line">		exit(1);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	//3 hid read</span><br><span class="line">	if (hid_init())</span><br><span class="line">		return -1;</span><br><span class="line"></span><br><span class="line">	// Open the device using the VID, PID,</span><br><span class="line">	// and optionally the Serial number.</span><br><span class="line">	////handle = hid_open(0x4d8, 0x3f, L&quot;12345&quot;);</span><br><span class="line">	handle = hid_open(0x1915, 0x520c, NULL, 2);</span><br><span class="line">	if (!handle) &#123;</span><br><span class="line">		printf(&quot;unable to open device\n&quot;);</span><br><span class="line"> 		return 1;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// Set the hid_read() function to be blocking.</span><br><span class="line">	hid_set_nonblocking(handle, 0);</span><br><span class="line"></span><br><span class="line">	// Try to read from the device. There should be no</span><br><span class="line">	// data here, but execution should not block.</span><br><span class="line"></span><br><span class="line">	while (1) &#123;</span><br><span class="line">		memset(buf,0,sizeof(buf));</span><br><span class="line">		res = hid_read(handle, buf, sizeof(buf));</span><br><span class="line">		if (res &lt; 0)</span><br><span class="line">			printf(&quot;Unable to read()\n&quot;);</span><br><span class="line">		// for (int i = 0; i &lt; res; i++)</span><br><span class="line">		//	printf(&quot;%02hhx &quot;, buf[i]);</span><br><span class="line">		// printf(&quot;\n&quot;);</span><br><span class="line">		memset(writebuf,0,sizeof(writebuf));</span><br><span class="line">		writebuf[0] = 0x01;</span><br><span class="line">		writebuf[1] = buf[0];</span><br><span class="line">		writebuf[2] = buf[1];</span><br><span class="line">		for (int i = 3; i &lt; 16; i++)</span><br><span class="line">			writebuf[i] = buf[i + 7];</span><br><span class="line">		// Fileter keep-alive messages</span><br><span class="line">		if (writebuf[3] == 0x00)</span><br><span class="line">			continue;</span><br><span class="line">		if (writebuf[3] == 0x05 &amp;&amp; writebuf[4] == 0x00 &amp;&amp; writebuf[5] == 0x40)</span><br><span class="line">			continue;</span><br><span class="line">		// Fileter Encrypted messages</span><br><span class="line">		if (writebuf[3] &gt; 0x10)</span><br><span class="line">			continue;</span><br><span class="line">		for (int i = 0; i &lt; 16; i++)</span><br><span class="line">			printf(&quot;%02hhx &quot;, writebuf[i]);</span><br><span class="line">		printf(&quot;\n&quot;);</span><br><span class="line">		write(socketfd, writebuf, sizeof(writebuf));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	hid_close(handle);</span><br><span class="line"></span><br><span class="line">	/* Free static HIDAPI objects. */</span><br><span class="line">	hid_exit();</span><br><span class="line"></span><br><span class="line">	//4 close</span><br><span class="line">	close(socketfd);</span><br><span class="line"></span><br><span class="line">	return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Code for Computer 4: (We use MX Anywhere 2S as the remote mouse which is an unencrypted device, so that we can directly write bytes to it, otherwise, encryption before writting is needed.)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;wchar.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;hidapi.h&gt;</span><br><span class="line"></span><br><span class="line">// Headers needed for sleeping.</span><br><span class="line">#ifdef _WIN32</span><br><span class="line">	#include &lt;winsock2.h&gt;</span><br><span class="line">    #include &lt;windows.h&gt;</span><br><span class="line">	#include &lt;ws2tcpip.h&gt;</span><br><span class="line">	#define WIN32_LEAN_AND_MEAN</span><br><span class="line"></span><br><span class="line">    // Need to link with Ws2_32.lib</span><br><span class="line">    #pragma comment (lib, &quot;Ws2_32.lib&quot;)</span><br><span class="line">    // #pragma comment (lib, &quot;Mswsock.lib&quot;)</span><br><span class="line">#else</span><br><span class="line">	#include &lt;unistd.h&gt;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#define DEFAULT_BUFLEN 16</span><br><span class="line">#define MAX_QUEUE_LEN 1000</span><br><span class="line">#define DEFAULT_PORT &quot;6666&quot;</span><br><span class="line"></span><br><span class="line">int  __cdecl main(int argc, char* argv[])</span><br><span class="line">&#123;</span><br><span class="line">    WSADATA wsaData;</span><br><span class="line">    int iResult;</span><br><span class="line"></span><br><span class="line">    SOCKET ListenSocket = INVALID_SOCKET;</span><br><span class="line">    SOCKET ClientSocket = INVALID_SOCKET;</span><br><span class="line"></span><br><span class="line">    struct addrinfo* result = NULL;</span><br><span class="line">    struct addrinfo hints;</span><br><span class="line"></span><br><span class="line">    int iSendResult;</span><br><span class="line">    char recvbuf[DEFAULT_BUFLEN];</span><br><span class="line">    int recvbuflen = DEFAULT_BUFLEN;</span><br><span class="line"></span><br><span class="line">    //char queuebuf[MAX_QUEUE_LEN][DEFAULT_BUFLEN];</span><br><span class="line">    //int queueIdx = 0;</span><br><span class="line"></span><br><span class="line">    if (hid_init())</span><br><span class="line">        return -1;</span><br><span class="line">    // Open the device using the VID, PID,</span><br><span class="line">    // and optionally the Serial number.</span><br><span class="line">    hid_device* handle = hid_open(0x1915, 0x520c, NULL, 2);</span><br><span class="line">    if (!handle) &#123;</span><br><span class="line">        printf(&quot;unable to open device\n&quot;);</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    // Set the hid_read() function to be blocking.</span><br><span class="line">    hid_set_nonblocking(handle, 0);</span><br><span class="line"></span><br><span class="line">    while (1) &#123;</span><br><span class="line">        // Initialize Winsock</span><br><span class="line">        iResult = WSAStartup(MAKEWORD(2, 2), &amp;wsaData);</span><br><span class="line">        if (iResult != 0) &#123;</span><br><span class="line">            printf(&quot;WSAStartup failed with error: %d\n&quot;, iResult);</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        ZeroMemory(&amp;hints, sizeof(hints));</span><br><span class="line">        hints.ai_family = AF_INET;</span><br><span class="line">        hints.ai_socktype = SOCK_STREAM;</span><br><span class="line">        hints.ai_protocol = IPPROTO_TCP;</span><br><span class="line">        hints.ai_flags = AI_PASSIVE;</span><br><span class="line"></span><br><span class="line">        // Resolve the server address and port</span><br><span class="line">        iResult = getaddrinfo(NULL, DEFAULT_PORT, &amp;hints, &amp;result);</span><br><span class="line">        if (iResult != 0) &#123;</span><br><span class="line">            printf(&quot;getaddrinfo failed with error: %d\n&quot;, iResult);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Create a SOCKET for connecting to server</span><br><span class="line">        ListenSocket = socket(result-&gt;ai_family, result-&gt;ai_socktype, result-&gt;ai_protocol);</span><br><span class="line">        if (ListenSocket == INVALID_SOCKET || ListenSocket == SOCKET_ERROR) &#123;</span><br><span class="line">            printf(&quot;socket failed with error: %ld\n&quot;, WSAGetLastError());</span><br><span class="line">            freeaddrinfo(result);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // Setup the TCP listening socket</span><br><span class="line">        iResult = bind(ListenSocket, result-&gt;ai_addr, (int)result-&gt;ai_addrlen);</span><br><span class="line">        if (iResult == SOCKET_ERROR) &#123;</span><br><span class="line">            printf(&quot;bind failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">            freeaddrinfo(result);</span><br><span class="line">            closesocket(ListenSocket);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        freeaddrinfo(result);</span><br><span class="line"></span><br><span class="line">        iResult = listen(ListenSocket, SOMAXCONN);</span><br><span class="line">        if (iResult == SOCKET_ERROR) &#123;</span><br><span class="line">            printf(&quot;listen failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">            closesocket(ListenSocket);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        // Accept a client socket</span><br><span class="line">        ClientSocket = accept(ListenSocket, NULL, NULL);</span><br><span class="line">        if (ClientSocket == INVALID_SOCKET) &#123;</span><br><span class="line">            printf(&quot;accept failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">            closesocket(ListenSocket);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // No longer need server socket</span><br><span class="line">        // closesocket(ListenSocket);</span><br><span class="line"></span><br><span class="line">        // Receive until the peer shuts down the connection</span><br><span class="line">        do &#123;</span><br><span class="line">            memset(recvbuf, 0, sizeof(recvbuf));</span><br><span class="line">            iResult = recv(ClientSocket, recvbuf, recvbuflen, 0);</span><br><span class="line">            if (iResult &gt; 0) &#123;</span><br><span class="line">                for (int j = 0; j &lt; DEFAULT_BUFLEN; j++)</span><br><span class="line">                    printf(&quot;%02hhx &quot;, recvbuf[j]);</span><br><span class="line">                printf(&quot;\n&quot;);</span><br><span class="line">                // printf(&quot;%d Bytes received: %s\n&quot;, iResult, recvbuf);</span><br><span class="line">                /*memcpy(queuebuf[queueIdx], recvbuf, sizeof(recvbuf));</span><br><span class="line">                queueIdx++;</span><br><span class="line">                if (recvbuf[3] == 0x0a &amp;&amp; recvbuf[4] == 0x00 &amp;&amp; recvbuf[5] == 0x4f) &#123;</span><br><span class="line">                    for (int i = 0; i &lt; queueIdx; i++) &#123;</span><br><span class="line">                        hid_write(handle, queuebuf[i], sizeof(recvbuf));</span><br><span class="line">                    &#125;</span><br><span class="line">                    queueIdx = 0;</span><br><span class="line">                &#125;*/</span><br><span class="line">                hid_write(handle, recvbuf, sizeof(recvbuf));</span><br><span class="line"></span><br><span class="line">                // Echo the buffer back to the sender</span><br><span class="line">                //iSendResult = send(ClientSocket, recvbuf, iResult, 0);</span><br><span class="line">                //if (iSendResult == SOCKET_ERROR) &#123;</span><br><span class="line">                //    printf(&quot;send failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">                //    closesocket(ClientSocket);</span><br><span class="line">                //    WSACleanup();</span><br><span class="line">                //    return 1;</span><br><span class="line">                //&#125;</span><br><span class="line">                //printf(&quot;Bytes sent: %d\n&quot;, iSendResult);</span><br><span class="line">            &#125;</span><br><span class="line">            else if (iResult == 0)</span><br><span class="line">                printf(&quot;Connection closing...\n&quot;);</span><br><span class="line">            else &#123;</span><br><span class="line">                printf(&quot;recv failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">                closesocket(ClientSocket);</span><br><span class="line">                WSACleanup();</span><br><span class="line">                return 1;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125; while (iResult &gt; 0);</span><br><span class="line"></span><br><span class="line">        // shutdown the connection since we&#x27;re done</span><br><span class="line">        iResult = shutdown(ClientSocket, SD_SEND);</span><br><span class="line">        if (iResult == SOCKET_ERROR) &#123;</span><br><span class="line">            printf(&quot;shutdown failed with error: %d\n&quot;, WSAGetLastError());</span><br><span class="line">            closesocket(ClientSocket);</span><br><span class="line">            WSACleanup();</span><br><span class="line">            return 1;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // cleanup</span><br><span class="line">        closesocket(ClientSocket);</span><br><span class="line">        WSACleanup();</span><br><span class="line">    &#125;</span><br><span class="line">    hid_close(handle);</span><br><span class="line">    hid_exit();</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Finally-Run-All"><a href="#Finally-Run-All" class="headerlink" title="Finally, Run All"></a>Finally, Run All</h2><ol>
+<li>Use local dongle to capture device address of source mouse, noted as <code>SS:SS:SS:SS:SS</code></li>
+<li>Use remote dongle to capture device address of remote mouse, noted as <code>DD:DD:DD:DD:DD</code></li>
+<li>Set up local dongle to <code>passive_enum</code> mode. (If use mouse and keyboard at the same time, make sure mouse and keyboard link to the same Unifying receiver. Once enter the passive enumeration mode, the dongle dumps RF signals of both mouse and keyboard.)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOGITacker (discover) $ passive_enum SS:SS:SS:SS:SS</span><br></pre></td></tr></table></figure></li>
+<li>Set up remote dongle to <code>inject</code> mode. (If use mouse and keyboard at the same time, choose device address of either mouse and keyboard is OK. It’s OK to inject mouse events to a keyboard.)<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LOGITacker (discover) $ inject target DD:DD:DD:DD:DD</span><br></pre></td></tr></table></figure></li>
+<li>On Computer 4, start socket server</li>
+<li>On Computer 3, start socket client</li>
+<li>Move source mouse, you’ll see bytes printed on Computer 3. Computer 4 prints bytes received. Importantly, mouse cursor of target computer moves!  </li>
+</ol>
+<h2 id="Screen-Record"><a href="#Screen-Record" class="headerlink" title="Screen Record"></a>Screen Record</h2><p><video src="/2022/02/08/logitracker-remote-control/record.mov" position= "absolute" width="100%" height="100%" controls="controls"></video></p>
+<p>In this video, we connect local Unifying receiver to Compter 3, and we view the screen of Computer 2 with VNC. Therefore, there’re two mouse cursors in the video: the black one is of Computer 3 (macOS), and the white one is of Computer 2 (Windows). When the black cursor moves, the white cursor moves in the same direction. Bytes flashing in the terminal transmit from Computer 3 to Computer 4. </p>
+<h2 id="Reminder"><a href="#Reminder" class="headerlink" title="Reminder"></a>Reminder</h2><p>LOGITacker is a powerful tool and should be used for authorized testing and/or educational purposes only. Just use it on devices owned by yourself. I take no responsibility for the abused use of this demo.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="https://z3dd1cu5.github.io/2022/02/08/logitracker-remote-control/" data-id="ckze47yqj0001g2wqeubx137z" data-title="Local Mouse/Keyboard Control Remote Computer By Using LOGITracker" class="article-share-link">Share</a>
+      
+      
+      
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/IoT-Remote-Control/" rel="tag">IoT, Remote Control</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2022/01/16/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/IoT-Remote-Control/" rel="tag">IoT, Remote Control</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/IoT-Remote-Control/" style="font-size: 10px;">IoT, Remote Control</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/02/">February 2022</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/01/">January 2022</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2022/02/08/logitracker-remote-control/">Local Mouse/Keyboard Control Remote Computer By Using LOGITracker</a>
+          </li>
+        
+          <li>
+            <a href="/2022/01/16/hello-world/">Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2022 z3dd1cu5<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.4.1.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
